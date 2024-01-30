@@ -1,0 +1,804 @@
+{
+  "id": "project_1",
+  "name": "Holiday Booking",
+  "kind": "Project",
+  "properties": {},
+  "elements": [
+    {
+      "id": "app_1",
+      "name": "Main App",
+      "kind": "App",
+      "properties": {},
+      "elements": [
+        {
+          "id": "serverappconnector_1",
+          "name": "Main Server App",
+          "kind": "ServerAppConnector",
+          "properties": {
+            "serverApp": {
+              "expr": "MainServerApp"
+            }
+          },
+          "elements": []
+        },
+        {
+          "id": "appbar_1",
+          "name": "Main App Bar",
+          "kind": "AppBar",
+          "properties": {
+            "title": "Holiday Bookings"
+          },
+          "elements": [
+            {
+              "id": "button_2",
+              "name": "My Bookings Button",
+              "kind": "Button",
+              "properties": {
+                "content": "My Bookings",
+                "appearance": "filled",
+                "action": {
+                  "expr": "MainServerApp.Refresh('GetOwnBookings')\nShowPage(MyBookingsPage)"
+                }
+              },
+              "elements": []
+            },
+            {
+              "id": "button_11",
+              "name": "All Bookings",
+              "kind": "Button",
+              "properties": {
+                "content": "All Bookings",
+                "appearance": "filled",
+                "action": {
+                  "expr": "MainServerApp.Refresh('GetAllBookings')\nShowPage(AllBookingsPage)"
+                },
+                "display": {
+                  "expr": "And(CurrentUser(), MainServerApp.GetOwnUser()?.Approver)"
+                }
+              },
+              "elements": []
+            },
+            {
+              "id": "userlogon_2",
+              "name": "User Logon 2",
+              "kind": "UserLogon",
+              "properties": {},
+              "elements": []
+            }
+          ]
+        },
+        {
+          "id": "page_2",
+          "name": "My Bookings Page",
+          "kind": "Page",
+          "properties": {
+            "notLoggedInPage": {
+              "expr": "LoggedOutPage"
+            }
+          },
+          "elements": [
+            {
+              "id": "text_1",
+              "name": "Title",
+              "kind": "Text",
+              "properties": {
+                "content": "My Bookings",
+                "fontSize": 22
+              },
+              "elements": []
+            },
+            {
+              "id": "button_3",
+              "name": "New Booking Button",
+              "kind": "Button",
+              "properties": {
+                "content": "New Booking",
+                "appearance": "outline",
+                "action": {
+                  "expr": "ShowPage(AddBookingPage)"
+                }
+              },
+              "elements": []
+            },
+            {
+              "id": "list_1",
+              "name": "Bookings List",
+              "kind": "List",
+              "properties": {
+                "items": {
+                  "expr": "Sort(MainServerApp.GetOwnBookings(), $item.StartDate)"
+                }
+              },
+              "elements": [
+                {
+                  "id": "layout_1",
+                  "name": "Booking Layout",
+                  "kind": "Layout",
+                  "properties": {
+                    "horizontal": true,
+                    "wrap": true
+                  },
+                  "elements": [
+                    {
+                      "id": "calculation_5",
+                      "name": "Start Date",
+                      "kind": "Calculation",
+                      "properties": {
+                        "label": "Start Date",
+                        "display": true,
+                        "calculation": {
+                          "expr": "DateFormat($item.StartDate, 'dd MMM yyyy')"
+                        },
+                        "width": "8em"
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "calculation_6",
+                      "name": "Finish Date",
+                      "kind": "Calculation",
+                      "properties": {
+                        "label": "Finish Date",
+                        "display": true,
+                        "calculation": {
+                          "expr": "DateFormat($item.FinishDate, 'dd MMM yyyy')"
+                        },
+                        "width": "8em"
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "text_2",
+                      "name": "Status",
+                      "kind": "Text",
+                      "properties": {
+                        "content": {
+                          "expr": "$item.Status"
+                        },
+                        "width": "10em"
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "button_4",
+                      "name": "Update Button",
+                      "kind": "Button",
+                      "properties": {
+                        "content": "Update",
+                        "appearance": "outline",
+                        "action": {
+                          "expr": "ShowPage(UpdateBookingPage, $item.id)"
+                        }
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "button_7",
+                      "name": "Cancel Button",
+                      "kind": "Button",
+                      "properties": {
+                        "content": "Cancel",
+                        "appearance": "outline",
+                        "action": {
+                          "expr": "ShowPage(CancelBookingPage, $item.id)"
+                        }
+                      },
+                      "elements": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "page_6",
+          "name": "All Bookings Page",
+          "kind": "Page",
+          "properties": {
+            "notLoggedInPage": {
+              "expr": "LoggedOutPage"
+            }
+          },
+          "elements": [
+            {
+              "id": "text_4",
+              "name": "Title",
+              "kind": "Text",
+              "properties": {
+                "content": "All Bookings",
+                "fontSize": 22
+              },
+              "elements": []
+            },
+            {
+              "id": "list_2",
+              "name": "Bookings List",
+              "kind": "List",
+              "properties": {
+                "items": {
+                  "expr": "Sort(MainServerApp.GetAllBookings(), $item.StartDate)"
+                }
+              },
+              "elements": [
+                {
+                  "id": "layout_2",
+                  "name": "Booking Layout",
+                  "kind": "Layout",
+                  "properties": {
+                    "horizontal": true,
+                    "wrap": true
+                  },
+                  "elements": [
+                    {
+                      "id": "text_6",
+                      "name": "User Name",
+                      "kind": "Text",
+                      "properties": {
+                        "content": {
+                          "expr": "MainServerApp.GetUser($item.UserId).FirstName + ' ' + MainServerApp.GetUser($item.UserId).LastName"
+                        },
+                        "width": "10em"
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "calculation_7",
+                      "name": "Start Date",
+                      "kind": "Calculation",
+                      "properties": {
+                        "label": "Start Date",
+                        "display": true,
+                        "calculation": {
+                          "expr": "DateFormat($item.StartDate, 'dd MMM yyyy')"
+                        },
+                        "width": "8em"
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "calculation_8",
+                      "name": "Finish Date",
+                      "kind": "Calculation",
+                      "properties": {
+                        "label": "Finish Date",
+                        "display": true,
+                        "calculation": {
+                          "expr": "DateFormat($item.FinishDate, 'dd MMM yyyy')"
+                        },
+                        "width": "8em"
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "text_5",
+                      "name": "Status",
+                      "kind": "Text",
+                      "properties": {
+                        "content": {
+                          "expr": "$item.Status"
+                        },
+                        "width": "10em"
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "button_9",
+                      "name": "Approve Button",
+                      "kind": "Button",
+                      "properties": {
+                        "content": "Approve",
+                        "appearance": "outline",
+                        "action": {
+                          "expr": "ShowPage(ApproveBookingPage, $item.id)"
+                        }
+                      },
+                      "elements": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "page_1",
+          "name": "Add Booking Page",
+          "kind": "Page",
+          "properties": {
+            "notLoggedInPage": {
+              "expr": "LoggedOutPage"
+            }
+          },
+          "elements": [
+            {
+              "id": "form_1",
+              "name": "Add Booking Form",
+              "kind": "Form",
+              "properties": {
+                "label": "Add Booking",
+                "submitAction": {
+                  "expr": "MainServerApp.AddBooking($form)"
+                }
+              },
+              "elements": [
+                {
+                  "id": "dateinput_1",
+                  "name": "Start Date",
+                  "kind": "DateInput",
+                  "properties": {},
+                  "elements": []
+                },
+                {
+                  "id": "dateinput_2",
+                  "name": "Finish Date",
+                  "kind": "DateInput",
+                  "properties": {},
+                  "elements": []
+                },
+                {
+                  "id": "button_1",
+                  "name": "Save Button",
+                  "kind": "Button",
+                  "properties": {
+                    "content": "Save",
+                    "appearance": "filled",
+                    "action": {
+                      "expr": "$form.Submit()\n//ShowPage(MyBookingsPage)"
+                    }
+                  },
+                  "elements": []
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "page_3",
+          "name": "Update Booking Page",
+          "kind": "Page",
+          "properties": {
+            "notLoggedInPage": {
+              "expr": "LoggedOutPage"
+            }
+          },
+          "elements": [
+            {
+              "id": "calculation_1",
+              "name": "Booking Id",
+              "kind": "Calculation",
+              "properties": {
+                "display": false,
+                "calculation": {
+                  "expr": "CurrentUrl().pathSections[0]"
+                }
+              },
+              "elements": []
+            },
+            {
+              "id": "calculation_2",
+              "name": "Booking",
+              "kind": "Calculation",
+              "properties": {
+                "calculation": {
+                  "expr": "MainServerApp.GetOwnBooking(BookingId)"
+                },
+                "display": false
+              },
+              "elements": []
+            },
+            {
+              "id": "form_2",
+              "name": "Update Booking Form",
+              "kind": "Form",
+              "properties": {
+                "label": "Update Booking",
+                "submitAction": {
+                  "expr": "MainServerApp.UpdateBooking(Booking.value.id, $form)"
+                },
+                "initialValue": {
+                  "expr": "Booking"
+                }
+              },
+              "elements": [
+                {
+                  "id": "dateinput_5",
+                  "name": "Start Date",
+                  "kind": "DateInput",
+                  "properties": {},
+                  "elements": []
+                },
+                {
+                  "id": "dateinput_6",
+                  "name": "Finish Date",
+                  "kind": "DateInput",
+                  "properties": {},
+                  "elements": []
+                }
+              ]
+            },
+            {
+              "id": "button_5",
+              "name": "Save Button",
+              "kind": "Button",
+              "properties": {
+                "content": "Save",
+                "appearance": "filled",
+                "action": {
+                  "expr": "UpdateBookingForm.Submit()\nShowPage('previous')"
+                }
+              },
+              "elements": []
+            }
+          ]
+        },
+        {
+          "id": "page_4",
+          "name": "Cancel Booking Page",
+          "kind": "Page",
+          "properties": {
+            "notLoggedInPage": {
+              "expr": "LoggedOutPage"
+            }
+          },
+          "elements": [
+            {
+              "id": "calculation_3",
+              "name": "Booking Id",
+              "kind": "Calculation",
+              "properties": {
+                "display": false,
+                "calculation": {
+                  "expr": "CurrentUrl().pathSections[0]"
+                }
+              },
+              "elements": []
+            },
+            {
+              "id": "calculation_4",
+              "name": "Booking",
+              "kind": "Calculation",
+              "properties": {
+                "calculation": {
+                  "expr": "MainServerApp.GetOwnBooking(BookingId)"
+                },
+                "display": false
+              },
+              "elements": []
+            },
+            {
+              "id": "form_3",
+              "name": "Cancel Booking Form",
+              "kind": "Form",
+              "properties": {
+                "label": "Cancel Booking",
+                "submitAction": {
+                  "expr": "MainServerApp.CancelBooking(Booking.value.id)"
+                },
+                "initialValue": {
+                  "expr": "Booking"
+                },
+                "readOnly": true
+              },
+              "elements": [
+                {
+                  "id": "dateinput_7",
+                  "name": "Start Date",
+                  "kind": "DateInput",
+                  "properties": {
+                    "readOnly": true
+                  },
+                  "elements": []
+                },
+                {
+                  "id": "dateinput_8",
+                  "name": "Finish Date",
+                  "kind": "DateInput",
+                  "properties": {
+                    "readOnly": true
+                  },
+                  "elements": []
+                }
+              ]
+            },
+            {
+              "id": "button_6",
+              "name": "Confirm Button",
+              "kind": "Button",
+              "properties": {
+                "content": "Confirm Cancel",
+                "appearance": "filled",
+                "action": {
+                  "expr": "CancelBookingForm.Submit()\nShowPage('previous')"
+                }
+              },
+              "elements": []
+            }
+          ]
+        },
+        {
+          "id": "page_7",
+          "name": "Approve Booking Page",
+          "kind": "Page",
+          "properties": {
+            "notLoggedInPage": {
+              "expr": "LoggedOutPage"
+            }
+          },
+          "elements": [
+            {
+              "id": "calculation_9",
+              "name": "Booking Id",
+              "kind": "Calculation",
+              "properties": {
+                "display": false,
+                "calculation": {
+                  "expr": "CurrentUrl().pathSections[0]"
+                }
+              },
+              "elements": []
+            },
+            {
+              "id": "calculation_10",
+              "name": "Booking",
+              "kind": "Calculation",
+              "properties": {
+                "calculation": {
+                  "expr": "MainServerApp.GetBooking(BookingId)"
+                },
+                "display": false
+              },
+              "elements": []
+            },
+            {
+              "id": "form_4",
+              "name": "Approve Booking Form",
+              "kind": "Form",
+              "properties": {
+                "label": "Approve Booking",
+                "submitAction": {
+                  "expr": "MainServerApp.ApproveBooking(Booking.value.id)"
+                },
+                "initialValue": {
+                  "expr": "Booking"
+                },
+                "readOnly": true
+              },
+              "elements": [
+                {
+                  "id": "dateinput_9",
+                  "name": "Start Date",
+                  "kind": "DateInput",
+                  "properties": {
+                    "readOnly": true
+                  },
+                  "elements": []
+                },
+                {
+                  "id": "dateinput_10",
+                  "name": "Finish Date",
+                  "kind": "DateInput",
+                  "properties": {
+                    "readOnly": true
+                  },
+                  "elements": []
+                },
+                {
+                  "id": "textinput_1",
+                  "name": "Status",
+                  "kind": "TextInput",
+                  "properties": {},
+                  "elements": []
+                }
+              ]
+            },
+            {
+              "id": "button_12",
+              "name": "Approve Button",
+              "kind": "Button",
+              "properties": {
+                "content": "Approve",
+                "appearance": "filled",
+                "action": {
+                  "expr": "ApproveBookingForm.Submit()\nShowPage('previous')"
+                }
+              },
+              "elements": []
+            }
+          ]
+        },
+        {
+          "id": "page_5",
+          "name": "Logged Out Page",
+          "kind": "Page",
+          "properties": {},
+          "elements": [
+            {
+              "id": "text_3",
+              "name": "Text 3",
+              "kind": "Text",
+              "properties": {
+                "content": "Please log in to continue",
+                "fontSize": 20
+              },
+              "elements": []
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "id": "serverapp_1",
+      "name": "Main Server App",
+      "kind": "ServerApp",
+      "properties": {},
+      "elements": [
+        {
+          "id": "firestoredatastore_1",
+          "name": "Main Data Store",
+          "kind": "FirestoreDataStore",
+          "properties": {
+            "collections": "Bookings\nUsers\nSettings"
+          },
+          "elements": []
+        },
+        {
+          "id": "collection_1",
+          "name": "Bookings",
+          "kind": "Collection",
+          "properties": {
+            "dataStore": {
+              "expr": "MainDataStore"
+            },
+            "collectionName": "Bookings"
+          },
+          "elements": []
+        },
+        {
+          "id": "collection_2",
+          "name": "Users",
+          "kind": "Collection",
+          "properties": {
+            "dataStore": {
+              "expr": "MainDataStore"
+            },
+            "collectionName": "Users"
+          },
+          "elements": []
+        },
+        {
+          "id": "function_1",
+          "name": "Add Booking",
+          "kind": "Function",
+          "properties": {
+            "input1": "BookingDetails",
+            "action": true,
+            "calculation": {
+              "expr": "Check(BookingDetails.StartDate, \"Start Date must not be empty\")\nCheck(BookingDetails.FinishDate, \"Finish Date must not be empty\")\n//Check(Gte(BookingDetails.FinishDate, BookingDetails.StartDate), \"Finish Date must be on or after Start Date\")\nAdd(Bookings, Record(BookingDetails, \"UserId\", CurrentUser().Id, \"Status\",\"Requested\", ))"
+            }
+          },
+          "elements": []
+        },
+        {
+          "id": "function_2",
+          "name": "Update Booking",
+          "kind": "Function",
+          "properties": {
+            "input1": "Id",
+            "action": true,
+            "calculation": {
+              "expr": "let booking = Get(Bookings, Id)\nCheck(BookingUpdates.StartDate, \"Start Date must not be empty\")\nCheck(BookingUpdates.FinishDate, \"Finish Date must not be empty\")\n//Check(Gte(BookingDetails.FinishDate, BookingDetails.StartDate), \"Finish Date must be on or after Start Date\")\nUpdate(Bookings, Id, Record( Pick(BookingUpdates, 'StartDate', 'FinishDate' ), \"Status\",\"Updated\"))"
+            },
+            "input2": "BookingUpdates"
+          },
+          "elements": []
+        },
+        {
+          "id": "function_5",
+          "name": "Cancel Booking",
+          "kind": "Function",
+          "properties": {
+            "input1": "Id",
+            "action": true,
+            "calculation": {
+              "expr": "//Check(Gte(Bookings.Get(Id).StartDate, Today()), \"Booking must not have already started\")\nUpdate(Bookings, Id, Record(\"Status\",\"Cancelled\"))"
+            }
+          },
+          "elements": []
+        },
+        {
+          "id": "function_3",
+          "name": "Get Own Bookings",
+          "kind": "Function",
+          "properties": {
+            "action": false,
+            "calculation": {
+              "expr": "Bookings.Query({UserId: CurrentUser().Id})"
+            }
+          },
+          "elements": []
+        },
+        {
+          "id": "function_4",
+          "name": "Get Own Booking",
+          "kind": "Function",
+          "properties": {
+            "action": false,
+            "calculation": {
+              "expr": "Bookings.Get(BookingId)"
+            },
+            "input1": "BookingId"
+          },
+          "elements": []
+        },
+        {
+          "id": "function_10",
+          "name": "Get Booking",
+          "kind": "Function",
+          "properties": {
+            "action": false,
+            "calculation": {
+              "expr": "Check(Get(Users, CurrentUser().Id).Approver, \"User must be an Approver\")\nBookings.Get(BookingId)"
+            },
+            "input1": "BookingId"
+          },
+          "elements": []
+        },
+        {
+          "id": "function_6",
+          "name": "Get Own User",
+          "kind": "Function",
+          "properties": {
+            "calculation": {
+              "expr": "let user = await CurrentUser() \nreturn user ? Get(Users, user.Id) : null"
+            },
+            "javascript": true
+          },
+          "elements": []
+        },
+        {
+          "id": "function_7",
+          "name": "Get All Bookings",
+          "kind": "Function",
+          "properties": {
+            "calculation": {
+              "expr": "Check(Get(Users, CurrentUser().Id).Approver, \"User must be an Approver\")\nBookings.Query({})"
+            }
+          },
+          "elements": []
+        },
+        {
+          "id": "function_8",
+          "name": "Approve Booking",
+          "kind": "Function",
+          "properties": {
+            "calculation": {
+              "expr": "Check(Get(Users, CurrentUser().Id).Approver, \"User must be an Approver\")\nUpdate(Bookings, Id, Record(\"Status\",\"Approved\"))"
+            },
+            "input1": "Id",
+            "action": true
+          },
+          "elements": []
+        },
+        {
+          "id": "function_9",
+          "name": "Get User",
+          "kind": "Function",
+          "properties": {
+            "input1": "Id",
+            "calculation": {
+              "expr": "Check(Get(Users, CurrentUser().Id).Approver, \"User must be an Approver\")\nGet(Users, Id)"
+            }
+          },
+          "elements": []
+        }
+      ]
+    },
+    {
+      "id": "_TOOLS",
+      "name": "Tools",
+      "kind": "ToolFolder",
+      "properties": {}
+    }
+  ]
+}
