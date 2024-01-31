@@ -2,6 +2,40 @@ const runtimeUrl = window.elementoRuntimeUrl || 'https://elemento.online/lib/run
 const Elemento = await import(runtimeUrl)
 const {React} = Elemento
 
+const {types: {ChoiceType, DateType, ListType, NumberType, DecimalType, RecordType, TextType, TrueFalseType, Rule}} = Elemento
+
+// MainDataTypes.js
+const MainDataTypes = (() => {
+
+    const BookingDates = new RecordType('Booking Dates', {required: false}, [
+        new Rule('Dates In Order', $item => $item.FinishDate >= $item.StartDate, {description: 'Finish Date must be on or after Start Date'})
+    ], [
+        new DateType('Start Date', {required: true}),
+        new DateType('Finish Date', {required: true})
+    ])
+    const UserDetails = new RecordType('User Details', {required: false}, [], [
+        new TextType('First Name', {required: true, minLength: 1}),
+        new TextType('Last Name', {required: true, minLength: 1}),
+        new TextType('Email', {required: true, format: 'email'}),
+        new TrueFalseType('Approver', {required: false}),
+        new TrueFalseType('Admin', {required: false})
+    ])
+    const UserNewDetails = new RecordType('User New Details', {basedOn: UserDetails, required: false}, [], [
+        new TextType('Password', {required: true})
+    ])
+    const Team = new RecordType('Team', {required: false}, [], [
+        new TextType('Name', {required: true}),
+        new TextType('Approver Id', {required: false})
+    ])
+
+    return {
+        BookingDates,
+        UserDetails,
+        UserNewDetails,
+        Team
+    }
+})()
+
 // MyBookingsPage.js
 function MyBookingsPage_BookingsListItem(props) {
     const pathWith = name => props.path + '.' + name
@@ -97,26 +131,26 @@ AllBookingsPage.notLoggedInPage = 'LoggedOutPage'
 // AddBookingPage.js
 function AddBookingPage_AddBookingForm(props) {
     const pathWith = name => props.path + '.' + name
-    const {Form, DateInput, Button} = Elemento.components
+    const {Form, TextElement, Button} = Elemento.components
+    const app = Elemento.useGetObjectState('app')
+    const {ShowPage} = app
     const $form = Elemento.useGetObjectState(props.path)
-    const StartDate = Elemento.useObjectState(pathWith('StartDate'), new DateInput.State({value: $form.originalValue?.StartDate}))
-    const FinishDate = Elemento.useObjectState(pathWith('FinishDate'), new DateInput.State({value: $form.originalValue?.FinishDate}))
+
     $form._updateValue()
     const SaveButton_action = React.useCallback(async () => {
         await $form.Submit()
-        //ShowPage(MyBookingsPage)
+        await ShowPage('previous')
     }, [$form])
 
     return React.createElement(Form, props,
-        React.createElement(DateInput, {path: pathWith('StartDate'), label: 'Start Date'}),
-        React.createElement(DateInput, {path: pathWith('FinishDate'), label: 'Finish Date'}),
-        React.createElement(Button, {path: pathWith('SaveButton'), content: 'Save', appearance: 'filled', action: SaveButton_action}),
+        React.createElement(TextElement, {path: pathWith('ErrorMessage'), color: 'red'}, $form.errors?._self),
+        React.createElement(Button, {path: pathWith('SaveButton'), content: 'Save', appearance: 'filled', enabled: $form.valid, action: SaveButton_action}),
     )
 }
 
 
 AddBookingPage_AddBookingForm.State = class AddBookingPage_AddBookingForm_State extends Elemento.components.BaseFormState {
-    ownFieldNames = ['StartDate', 'FinishDate']
+    ownFieldNames = []
 }
 
 
@@ -127,7 +161,7 @@ function AddBookingPage(props) {
     const AddBookingForm_submitAction = React.useCallback(async ($form, $data) => {
         await MainServerApp.AddBooking($form)
     }, [])
-    const AddBookingForm = Elemento.useObjectState(pathWith('AddBookingForm'), new AddBookingPage_AddBookingForm.State({submitAction: AddBookingForm_submitAction}))
+    const AddBookingForm = Elemento.useObjectState(pathWith('AddBookingForm'), new AddBookingPage_AddBookingForm.State({dataType: MainDataTypes.BookingDates, submitAction: AddBookingForm_submitAction}))
 
     return React.createElement(Page, {id: props.path},
         React.createElement(AddBookingPage_AddBookingForm, {path: pathWith('AddBookingForm'), label: 'Add Booking', horizontal: false, wrap: false}),
@@ -138,21 +172,19 @@ AddBookingPage.notLoggedInPage = 'LoggedOutPage'
 // UpdateBookingPage.js
 function UpdateBookingPage_UpdateBookingForm(props) {
     const pathWith = name => props.path + '.' + name
-    const {Form, DateInput} = Elemento.components
+    const {Form, TextElement} = Elemento.components
     const $form = Elemento.useGetObjectState(props.path)
-    const StartDate = Elemento.useObjectState(pathWith('StartDate'), new DateInput.State({value: $form.originalValue?.StartDate}))
-    const FinishDate = Elemento.useObjectState(pathWith('FinishDate'), new DateInput.State({value: $form.originalValue?.FinishDate}))
+
     $form._updateValue()
 
     return React.createElement(Form, props,
-        React.createElement(DateInput, {path: pathWith('StartDate'), label: 'Start Date'}),
-        React.createElement(DateInput, {path: pathWith('FinishDate'), label: 'Finish Date'}),
+        React.createElement(TextElement, {path: pathWith('ErrorMessage'), color: 'red'}, $form.errors?._self),
     )
 }
 
 
 UpdateBookingPage_UpdateBookingForm.State = class UpdateBookingPage_UpdateBookingForm_State extends Elemento.components.BaseFormState {
-    ownFieldNames = ['StartDate', 'FinishDate']
+    ownFieldNames = []
 }
 
 
@@ -167,7 +199,7 @@ function UpdateBookingPage(props) {
     const UpdateBookingForm_submitAction = React.useCallback(async ($form, $data) => {
         await MainServerApp.UpdateBooking(Booking.value.id, $form)
     }, [Booking])
-    const UpdateBookingForm = Elemento.useObjectState(pathWith('UpdateBookingForm'), new UpdateBookingPage_UpdateBookingForm.State({value: Booking, submitAction: UpdateBookingForm_submitAction}))
+    const UpdateBookingForm = Elemento.useObjectState(pathWith('UpdateBookingForm'), new UpdateBookingPage_UpdateBookingForm.State({value: Booking, dataType: MainDataTypes.BookingDates, submitAction: UpdateBookingForm_submitAction}))
     const SaveButton_action = React.useCallback(async () => {
         await UpdateBookingForm.Submit()
         await ShowPage('previous')
@@ -177,7 +209,7 @@ function UpdateBookingPage(props) {
         React.createElement(Calculation, {path: pathWith('BookingId'), display: false}),
         React.createElement(Calculation, {path: pathWith('Booking'), display: false}),
         React.createElement(UpdateBookingPage_UpdateBookingForm, {path: pathWith('UpdateBookingForm'), label: 'Update Booking', horizontal: false, wrap: false}),
-        React.createElement(Button, {path: pathWith('SaveButton'), content: 'Save', appearance: 'filled', action: SaveButton_action}),
+        React.createElement(Button, {path: pathWith('SaveButton'), content: 'Save', appearance: 'filled', enabled: UpdateBookingForm.valid, action: SaveButton_action}),
     )
 }
 UpdateBookingPage.notLoggedInPage = 'LoggedOutPage'
@@ -278,13 +310,145 @@ function ApproveBookingPage(props) {
 }
 ApproveBookingPage.notLoggedInPage = 'LoggedOutPage'
 
+// UsersPage.js
+function UsersPage_UsersListItem(props) {
+    const pathWith = name => props.path + '.' + name
+    const parentPathWith = name => Elemento.parentPath(props.path) + '.' + name
+    const {$item} = props
+    const {Layout, TextElement, Button} = Elemento.components
+    const app = Elemento.useGetObjectState('app')
+    const {ShowPage} = app
+    const UpdateButton_action = React.useCallback(async () => {
+        await ShowPage(UpdateUserPage, $item.id)
+    }, [])
+
+    return React.createElement(React.Fragment, null,
+        React.createElement(Layout, {path: pathWith('UserLayout'), horizontal: true, wrap: true},
+            React.createElement(TextElement, {path: pathWith('Name'), width: '15em'}, $item.FirstName + ' ' + $item.LastName),
+            React.createElement(TextElement, {path: pathWith('Approver'), width: '5em'}, $item.Approver ? 'Approver' : ''),
+            React.createElement(TextElement, {path: pathWith('Admin'), width: '5em'}, $item.Admin ? 'Admin' : ''),
+            React.createElement(Button, {path: pathWith('UpdateButton'), content: 'Update', appearance: 'outline', action: UpdateButton_action}),
+    ),
+    )
+}
+
+
+function UsersPage(props) {
+    const pathWith = name => props.path + '.' + name
+    const {Page, TextElement, Button, ListElement} = Elemento.components
+    const {Sort} = Elemento.globalFunctions
+    const app = Elemento.useGetObjectState('app')
+    const {ShowPage} = app
+    const MainServerApp = Elemento.useGetObjectState('app.MainServerApp')
+    const UsersList = Elemento.useObjectState(pathWith('UsersList'), new ListElement.State({}))
+    const NewUserButton_action = React.useCallback(async () => {
+        await ShowPage(AddUserPage)
+    }, [])
+
+    return React.createElement(Page, {id: props.path},
+        React.createElement(TextElement, {path: pathWith('Title'), fontSize: 22}, 'Users'),
+        React.createElement(Button, {path: pathWith('NewUserButton'), content: 'New User', appearance: 'outline', action: NewUserButton_action}),
+        React.createElement(ListElement, {path: pathWith('UsersList'), itemContentComponent: UsersPage_UsersListItem, items: Sort(MainServerApp.GetAllUsers(), $item => $item.LastName + $item.FirstName)}),
+    )
+}
+UsersPage.notLoggedInPage = 'LoggedOutPage'
+
+// UpdateUserPage.js
+function UpdateUserPage_UpdateUserForm(props) {
+    const pathWith = name => props.path + '.' + name
+    const {Form, TextElement} = Elemento.components
+    const $form = Elemento.useGetObjectState(props.path)
+
+    $form._updateValue()
+
+    return React.createElement(Form, props,
+        React.createElement(TextElement, {path: pathWith('ErrorMessage'), color: 'red'}, $form.errors?._self),
+    )
+}
+
+
+UpdateUserPage_UpdateUserForm.State = class UpdateUserPage_UpdateUserForm_State extends Elemento.components.BaseFormState {
+    ownFieldNames = []
+}
+
+
+function UpdateUserPage(props) {
+    const pathWith = name => props.path + '.' + name
+    const {Page, Calculation, Button} = Elemento.components
+    const app = Elemento.useGetObjectState('app')
+    const {CurrentUrl, ShowPage} = app
+    const MainServerApp = Elemento.useGetObjectState('app.MainServerApp')
+    const UserId = Elemento.useObjectState(pathWith('UserId'), new Calculation.State({value: CurrentUrl().pathSections[0]}))
+    const User = Elemento.useObjectState(pathWith('User'), new Calculation.State({value: MainServerApp.GetUser(UserId)}))
+    const UpdateUserForm_submitAction = React.useCallback(async ($form, $data) => {
+        await MainServerApp.UpdateExistingUser(User.value.id, $form)
+    }, [User])
+    const UpdateUserForm = Elemento.useObjectState(pathWith('UpdateUserForm'), new UpdateUserPage_UpdateUserForm.State({value: User, dataType: MainDataTypes.UserDetails, submitAction: UpdateUserForm_submitAction}))
+    const SaveButton_action = React.useCallback(async () => {
+        await UpdateUserForm.Submit()
+        await ShowPage('previous')
+    }, [UpdateUserForm])
+
+    return React.createElement(Page, {id: props.path},
+        React.createElement(Calculation, {path: pathWith('UserId'), display: false}),
+        React.createElement(Calculation, {path: pathWith('User'), display: false}),
+        React.createElement(UpdateUserPage_UpdateUserForm, {path: pathWith('UpdateUserForm'), label: 'Update User', horizontal: false, wrap: false}),
+        React.createElement(Button, {path: pathWith('SaveButton'), content: 'Save', appearance: 'filled', enabled: UpdateUserForm.valid, action: SaveButton_action}),
+    )
+}
+UpdateUserPage.notLoggedInPage = 'LoggedOutPage'
+
+// AddUserPage.js
+function AddUserPage_AddUserForm(props) {
+    const pathWith = name => props.path + '.' + name
+    const {Form, TextElement, Button} = Elemento.components
+    const app = Elemento.useGetObjectState('app')
+    const {ShowPage} = app
+    const $form = Elemento.useGetObjectState(props.path)
+
+    $form._updateValue()
+    const SaveButton_action = React.useCallback(async () => {
+        await $form.Submit()
+        await ShowPage('previous')
+    }, [$form])
+
+    return React.createElement(Form, props,
+        React.createElement(TextElement, {path: pathWith('ErrorMessage'), color: 'red'}, $form.errors?._self),
+        React.createElement(Button, {path: pathWith('SaveButton'), content: 'Save', appearance: 'filled', enabled: $form.valid, action: SaveButton_action}),
+    )
+}
+
+
+AddUserPage_AddUserForm.State = class AddUserPage_AddUserForm_State extends Elemento.components.BaseFormState {
+    ownFieldNames = []
+}
+
+
+function AddUserPage(props) {
+    const pathWith = name => props.path + '.' + name
+    const {Page} = Elemento.components
+    const app = Elemento.useGetObjectState('app')
+    const {ShowPage} = app
+    const MainServerApp = Elemento.useGetObjectState('app.MainServerApp')
+    const AddUserForm_submitAction = React.useCallback(async ($form, $data) => {
+        await MainServerApp.AddNewUser($form)
+        await ShowPage('previous')
+    }, [])
+    const AddUserForm = Elemento.useObjectState(pathWith('AddUserForm'), new AddUserPage_AddUserForm.State({dataType: MainDataTypes.UserNewDetails, submitAction: AddUserForm_submitAction}))
+
+    return React.createElement(Page, {id: props.path},
+        React.createElement(AddUserPage_AddUserForm, {path: pathWith('AddUserForm'), label: 'Add New User', horizontal: false, wrap: false}),
+    )
+}
+AddUserPage.notLoggedInPage = 'LoggedOutPage'
+
 // LoggedOutPage.js
 function LoggedOutPage(props) {
     const pathWith = name => props.path + '.' + name
     const {Page, TextElement} = Elemento.components
 
     return React.createElement(Page, {id: props.path},
-        React.createElement(TextElement, {path: pathWith('Text3'), fontSize: 20}, 'Please log in to continue'),
+        React.createElement(TextElement, {path: pathWith('LoggedOutMessage'), fontSize: 20}, 'Please log in to continue'),
     )
 }
 
@@ -330,6 +494,10 @@ function configMainServerApp() {
                 params: []
             },
 
+            GetAllUsers: {
+                params: []
+            },
+
             ApproveBooking: {
                 params: ['Id'],
                 action: true
@@ -337,6 +505,16 @@ function configMainServerApp() {
 
             GetUser: {
                 params: ['Id']
+            },
+
+            AddNewUser: {
+                params: ['UserDetails'],
+                action: true
+            },
+
+            UpdateExistingUser: {
+                params: ['UserId', 'UserDetails'],
+                action: true
             }
         }
     };
@@ -346,7 +524,7 @@ export default function MainApp(props) {
     const pathWith = name => 'MainApp' + '.' + name
     const {App, ServerAppConnector, AppBar, Button, UserLogon} = Elemento.components
     const {And} = Elemento.globalFunctions
-    const pages = {MyBookingsPage, AllBookingsPage, AddBookingPage, UpdateBookingPage, CancelBookingPage, ApproveBookingPage, LoggedOutPage}
+    const pages = {MyBookingsPage, AllBookingsPage, AddBookingPage, UpdateBookingPage, CancelBookingPage, ApproveBookingPage, UsersPage, UpdateUserPage, AddUserPage, LoggedOutPage}
     const {appContext} = props
     const app = Elemento.useObjectState('app', new App.State({pages, appContext}))
     const {ShowPage} = app
@@ -360,10 +538,15 @@ export default function MainApp(props) {
         await MainServerApp.Refresh('GetAllBookings')
         await ShowPage(AllBookingsPage)
     }, [MainServerApp])
+    const UsersButton_action = React.useCallback(async () => {
+        await MainServerApp.Refresh('GetAllUsers')
+        await ShowPage(UsersPage)
+    }, [MainServerApp])
 
     return React.createElement(App, {path: 'MainApp', topChildren: React.createElement( React.Fragment, null, React.createElement(AppBar, {path: pathWith('MainAppBar'), title: 'Holiday Bookings'},
             React.createElement(Button, {path: pathWith('MyBookingsButton'), content: 'My Bookings', appearance: 'filled', action: MyBookingsButton_action}),
             React.createElement(Button, {path: pathWith('AllBookings'), content: 'All Bookings', appearance: 'filled', display: And(CurrentUser(), MainServerApp.GetOwnUser()?.Approver), action: AllBookings_action}),
+            React.createElement(Button, {path: pathWith('UsersButton'), content: 'Users', appearance: 'filled', display: And(CurrentUser(), MainServerApp.GetOwnUser()?.Admin), action: UsersButton_action}),
             React.createElement(UserLogon, {path: pathWith('UserLogon2')}),
     ))
     },)

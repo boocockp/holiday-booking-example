@@ -59,6 +59,22 @@
               "elements": []
             },
             {
+              "id": "button_16",
+              "name": "Users Button",
+              "kind": "Button",
+              "properties": {
+                "content": "Users",
+                "appearance": "filled",
+                "action": {
+                  "expr": "MainServerApp.Refresh('GetAllUsers')\nShowPage(UsersPage)"
+                },
+                "display": {
+                  "expr": "And(CurrentUser(), MainServerApp.GetOwnUser()?.Admin)"
+                }
+              },
+              "elements": []
+            },
+            {
               "id": "userlogon_2",
               "name": "User Logon 2",
               "kind": "UserLogon",
@@ -319,21 +335,22 @@
                 "label": "Add Booking",
                 "submitAction": {
                   "expr": "MainServerApp.AddBooking($form)"
+                },
+                "dataType": {
+                  "expr": "MainDataTypes.BookingDates"
                 }
               },
               "elements": [
                 {
-                  "id": "dateinput_1",
-                  "name": "Start Date",
-                  "kind": "DateInput",
-                  "properties": {},
-                  "elements": []
-                },
-                {
-                  "id": "dateinput_2",
-                  "name": "Finish Date",
-                  "kind": "DateInput",
-                  "properties": {},
+                  "id": "text_7",
+                  "name": "Error Message",
+                  "kind": "Text",
+                  "properties": {
+                    "content": {
+                      "expr": "$form.errors?._self"
+                    },
+                    "color": "red"
+                  },
                   "elements": []
                 },
                 {
@@ -344,7 +361,10 @@
                     "content": "Save",
                     "appearance": "filled",
                     "action": {
-                      "expr": "$form.Submit()\n//ShowPage(MyBookingsPage)"
+                      "expr": "$form.Submit()\nShowPage('previous')"
+                    },
+                    "enabled": {
+                      "expr": "$form.valid"
                     }
                   },
                   "elements": []
@@ -398,21 +418,22 @@
                 },
                 "initialValue": {
                   "expr": "Booking"
+                },
+                "dataType": {
+                  "expr": "MainDataTypes.BookingDates"
                 }
               },
               "elements": [
                 {
-                  "id": "dateinput_5",
-                  "name": "Start Date",
-                  "kind": "DateInput",
-                  "properties": {},
-                  "elements": []
-                },
-                {
-                  "id": "dateinput_6",
-                  "name": "Finish Date",
-                  "kind": "DateInput",
-                  "properties": {},
+                  "id": "text_8",
+                  "name": "Error Message",
+                  "kind": "Text",
+                  "properties": {
+                    "content": {
+                      "expr": "$form.errors?._self"
+                    },
+                    "color": "red"
+                  },
                   "elements": []
                 }
               ]
@@ -426,6 +447,9 @@
                 "appearance": "filled",
                 "action": {
                   "expr": "UpdateBookingForm.Submit()\nShowPage('previous')"
+                },
+                "enabled": {
+                  "expr": "UpdateBookingForm.valid"
                 }
               },
               "elements": []
@@ -608,6 +632,252 @@
           ]
         },
         {
+          "id": "page_8",
+          "name": "Users Page",
+          "kind": "Page",
+          "properties": {
+            "notLoggedInPage": {
+              "expr": "LoggedOutPage"
+            }
+          },
+          "elements": [
+            {
+              "id": "text_9",
+              "name": "Title",
+              "kind": "Text",
+              "properties": {
+                "content": "Users",
+                "fontSize": 22
+              },
+              "elements": []
+            },
+            {
+              "id": "button_13",
+              "name": "New User Button",
+              "kind": "Button",
+              "properties": {
+                "content": "New User",
+                "appearance": "outline",
+                "action": {
+                  "expr": "ShowPage(AddUserPage)"
+                }
+              },
+              "elements": []
+            },
+            {
+              "id": "list_3",
+              "name": "Users List",
+              "kind": "List",
+              "properties": {
+                "items": {
+                  "expr": "Sort(MainServerApp.GetAllUsers(), $item.LastName + $item.FirstName)"
+                }
+              },
+              "elements": [
+                {
+                  "id": "layout_3",
+                  "name": "User Layout",
+                  "kind": "Layout",
+                  "properties": {
+                    "horizontal": true,
+                    "wrap": true
+                  },
+                  "elements": [
+                    {
+                      "id": "text_12",
+                      "name": "Name",
+                      "kind": "Text",
+                      "properties": {
+                        "content": {
+                          "expr": "$item.FirstName + ' ' + $item.LastName"
+                        },
+                        "width": "15em"
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "text_10",
+                      "name": "Approver",
+                      "kind": "Text",
+                      "properties": {
+                        "content": {
+                          "expr": "$item.Approver ? 'Approver' : \"\""
+                        },
+                        "width": "5em"
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "text_11",
+                      "name": "Admin",
+                      "kind": "Text",
+                      "properties": {
+                        "content": {
+                          "expr": "$item.Admin ? 'Admin' : \"\""
+                        },
+                        "width": "5em"
+                      },
+                      "elements": []
+                    },
+                    {
+                      "id": "button_14",
+                      "name": "Update Button",
+                      "kind": "Button",
+                      "properties": {
+                        "content": "Update",
+                        "appearance": "outline",
+                        "action": {
+                          "expr": "ShowPage(UpdateUserPage, $item.id)"
+                        }
+                      },
+                      "elements": []
+                    }
+                  ]
+                }
+              ]
+            }
+          ]
+        },
+        {
+          "id": "page_9",
+          "name": "Update User Page",
+          "kind": "Page",
+          "properties": {
+            "notLoggedInPage": {
+              "expr": "LoggedOutPage"
+            }
+          },
+          "elements": [
+            {
+              "id": "calculation_11",
+              "name": "User Id",
+              "kind": "Calculation",
+              "properties": {
+                "display": false,
+                "calculation": {
+                  "expr": "CurrentUrl().pathSections[0]"
+                }
+              },
+              "elements": []
+            },
+            {
+              "id": "calculation_12",
+              "name": "User",
+              "kind": "Calculation",
+              "properties": {
+                "calculation": {
+                  "expr": "MainServerApp.GetUser(UserId)"
+                },
+                "display": false
+              },
+              "elements": []
+            },
+            {
+              "id": "form_5",
+              "name": "Update User Form",
+              "kind": "Form",
+              "properties": {
+                "label": "Update User",
+                "submitAction": {
+                  "expr": "MainServerApp.UpdateExistingUser(User.value.id, $form)"
+                },
+                "initialValue": {
+                  "expr": "User"
+                },
+                "dataType": {
+                  "expr": "MainDataTypes.UserDetails"
+                }
+              },
+              "elements": [
+                {
+                  "id": "text_13",
+                  "name": "Error Message",
+                  "kind": "Text",
+                  "properties": {
+                    "content": {
+                      "expr": "$form.errors?._self"
+                    },
+                    "color": "red"
+                  },
+                  "elements": []
+                }
+              ]
+            },
+            {
+              "id": "button_17",
+              "name": "Save Button",
+              "kind": "Button",
+              "properties": {
+                "content": "Save",
+                "appearance": "filled",
+                "action": {
+                  "expr": "UpdateUserForm.Submit()\nShowPage('previous')"
+                },
+                "enabled": {
+                  "expr": "UpdateUserForm.valid"
+                }
+              },
+              "elements": []
+            }
+          ]
+        },
+        {
+          "id": "page_10",
+          "name": "Add User Page",
+          "kind": "Page",
+          "properties": {
+            "notLoggedInPage": {
+              "expr": "LoggedOutPage"
+            }
+          },
+          "elements": [
+            {
+              "id": "form_6",
+              "name": "Add User Form",
+              "kind": "Form",
+              "properties": {
+                "label": "Add New User",
+                "submitAction": {
+                  "expr": "MainServerApp.AddNewUser($form)\nShowPage('previous')"
+                },
+                "dataType": {
+                  "expr": "MainDataTypes.UserNewDetails"
+                }
+              },
+              "elements": [
+                {
+                  "id": "text_14",
+                  "name": "Error Message",
+                  "kind": "Text",
+                  "properties": {
+                    "content": {
+                      "expr": "$form.errors?._self"
+                    },
+                    "color": "red"
+                  },
+                  "elements": []
+                },
+                {
+                  "id": "button_18",
+                  "name": "Save Button",
+                  "kind": "Button",
+                  "properties": {
+                    "content": "Save",
+                    "appearance": "filled",
+                    "action": {
+                      "expr": "$form.Submit()\nShowPage('previous')"
+                    },
+                    "enabled": {
+                      "expr": "$form.valid"
+                    }
+                  },
+                  "elements": []
+                }
+              ]
+            }
+          ]
+        },
+        {
           "id": "page_5",
           "name": "Logged Out Page",
           "kind": "Page",
@@ -615,7 +885,7 @@
           "elements": [
             {
               "id": "text_3",
-              "name": "Text 3",
+              "name": "Logged Out Message",
               "kind": "Text",
               "properties": {
                 "content": "Please log in to continue",
@@ -768,6 +1038,17 @@
           "elements": []
         },
         {
+          "id": "function_12",
+          "name": "Get All Users",
+          "kind": "Function",
+          "properties": {
+            "calculation": {
+              "expr": "Check(Get(Users, CurrentUser().Id).Admin, \"User must be an Admin\")\nUsers.Query({})"
+            }
+          },
+          "elements": []
+        },
+        {
           "id": "function_8",
           "name": "Approve Booking",
           "kind": "Function",
@@ -787,10 +1068,180 @@
           "properties": {
             "input1": "Id",
             "calculation": {
-              "expr": "Check(Get(Users, CurrentUser().Id).Approver, \"User must be an Approver\")\nGet(Users, Id)"
+              "expr": "let thisUser = Get(Users, CurrentUser().Id)\nCheck(Or(thisUser.Approver, thisUser.Admin), \"User must be an Approver or Admin\")\nGet(Users, Id)"
             }
           },
           "elements": []
+        },
+        {
+          "id": "function_11",
+          "name": "Add New User",
+          "kind": "Function",
+          "properties": {
+            "input1": "UserDetails",
+            "action": true,
+            "calculation": {
+              "expr": "Check(Get(Users, CurrentUser().Id).Admin, \"User must be an Admin\")\nlet UserId = GetRandomId()\nCheck(UserDetails.FirstName, \"First Name must not be empty\")\nCheck(UserDetails.LastName, \"Last Name must not be empty\")\nlet theUser = Pick(UserDetails, 'FirstName', 'LastName', 'Email', 'Approver', 'Admin')\nAdd(Users, theUser)\nlet displayName = UserDetails.FirstName + ' ' + UserDetails.LastName\nCreateUser(UserId, Record({displayName: displayName , email: UserDetails.Email, password: UserDetails.Password}))"
+            }
+          },
+          "elements": []
+        },
+        {
+          "id": "function_13",
+          "name": "Update Existing User",
+          "kind": "Function",
+          "properties": {
+            "input1": "UserId",
+            "action": true,
+            "calculation": {
+              "expr": "Check(Get(Users, CurrentUser().Id).Admin, \"User must be an Admin\")\nCheck(UserDetails.FirstName, \"First Name must not be empty\")\nCheck(UserDetails.LastName, \"Last Name must not be empty\")\nlet theUser = Pick(UserDetails, 'FirstName', 'LastName', 'Email', 'Approver', 'Admin')\nUpdate(Users, UserId, theUser)"
+            },
+            "input2": "UserDetails"
+          },
+          "elements": []
+        }
+      ]
+    },
+    {
+      "id": "datatypes_1",
+      "name": "MainDataTypes ",
+      "kind": "DataTypes",
+      "properties": {},
+      "elements": [
+        {
+          "id": "recordtype_1",
+          "name": "Booking Dates",
+          "kind": "RecordType",
+          "properties": {},
+          "elements": [
+            {
+              "id": "datetype_1",
+              "name": "Start Date",
+              "kind": "DateType",
+              "properties": {
+                "required": true
+              },
+              "elements": []
+            },
+            {
+              "id": "datetype_2",
+              "name": "Finish Date",
+              "kind": "DateType",
+              "properties": {
+                "required": true
+              },
+              "elements": []
+            },
+            {
+              "id": "rule_1",
+              "name": "Dates In Order",
+              "kind": "Rule",
+              "properties": {
+                "description": "Finish Date must be on or after Start Date",
+                "formula": {
+                  "expr": "$item.FinishDate >= $item.StartDate"
+                }
+              },
+              "elements": []
+            }
+          ]
+        },
+        {
+          "id": "recordtype_2",
+          "name": "User Details",
+          "kind": "RecordType",
+          "properties": {},
+          "elements": [
+            {
+              "id": "texttype_1",
+              "name": "First Name",
+              "kind": "TextType",
+              "properties": {
+                "minLength": 1,
+                "required": true
+              },
+              "elements": []
+            },
+            {
+              "id": "texttype_2",
+              "name": "Last Name",
+              "kind": "TextType",
+              "properties": {
+                "minLength": 1,
+                "required": true
+              },
+              "elements": []
+            },
+            {
+              "id": "texttype_4",
+              "name": "Email",
+              "kind": "TextType",
+              "properties": {
+                "format": "email",
+                "required": true
+              },
+              "elements": []
+            },
+            {
+              "id": "truefalsetype_1",
+              "name": "Approver",
+              "kind": "TrueFalseType",
+              "properties": {},
+              "elements": []
+            },
+            {
+              "id": "truefalsetype_2",
+              "name": "Admin",
+              "kind": "TrueFalseType",
+              "properties": {},
+              "elements": []
+            }
+          ]
+        },
+        {
+          "id": "recordtype_4",
+          "name": "User New Details",
+          "kind": "RecordType",
+          "properties": {
+            "basedOn": {
+              "expr": "UserDetails"
+            }
+          },
+          "elements": [
+            {
+              "id": "texttype_7",
+              "name": "Password",
+              "kind": "TextType",
+              "properties": {
+                "required": true
+              },
+              "elements": []
+            }
+          ]
+        },
+        {
+          "id": "recordtype_3",
+          "name": "Team",
+          "kind": "RecordType",
+          "properties": {},
+          "elements": [
+            {
+              "id": "texttype_5",
+              "name": "Name",
+              "kind": "TextType",
+              "properties": {
+                "required": true
+              },
+              "elements": []
+            },
+            {
+              "id": "texttype_6",
+              "name": "Approver Id",
+              "kind": "TextType",
+              "properties": {},
+              "elements": []
+            }
+          ]
         }
       ]
     },
